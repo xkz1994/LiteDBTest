@@ -6,7 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
-        <RootNamespace>Local.NoSQL.DB.Providers</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
