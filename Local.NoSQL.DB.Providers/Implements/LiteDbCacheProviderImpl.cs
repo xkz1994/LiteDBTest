@@ -306,7 +306,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         var toDelete = liteCollection
             .Query()
             .Where(t => t.IsDeleted == false)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(23).Add(TimeSpan.FromSeconds(58))).ToUnixTimeSeconds())
             .OrderBy(t => t.Id)
             .Limit(deleteCount) // 限制最多删除的数量
             .ToList();
@@ -314,7 +314,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         toDelete.AddRange(liteCollection
             .Query()
             .Where(t => t.IsDeleted)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(23).Add(TimeSpan.FromSeconds(58))).ToUnixTimeSeconds())
             .ToList()); // 将已删除的数据超过缓存最大的时间也加入删除列表
 
         var resultList = toDelete.Select(item => liteCollection.Delete(item.Id)).ToList();
