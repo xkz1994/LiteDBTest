@@ -32,7 +32,7 @@ public static class LiteDbContextProvider
             var appSettingOptions = sp.GetRequiredService<IOptions<ApplicationSetting>>().Value;
             DirectoryHelper.CreateFileDirectoryIfNotExists(appSettingOptions.NosqlDbDataSource);
 
-            var liteDatabase = new LiteDatabase(new ConnectionString(appSettingOptions.NosqlDbDataSource) { Connection = ConnectionType.Shared });
+            var liteDatabase = new LiteDatabase(new ConnectionString(appSettingOptions.NosqlDbDataSource) { Connection = ConnectionType.Direct });
 
             // 将未提交的-log文件写入主数据库
             liteDatabase.Checkpoint();

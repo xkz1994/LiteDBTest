@@ -22,7 +22,7 @@ var cacheProvider = serviceProvider.GetRequiredService<ICacheProvider>();
 var timestamp = Stopwatch.GetTimestamp();
 
 var taskList = new List<Task>();
-for (var i = 0; i < 10; i++)
+for (var i = 0; i < 1; i++)
 {
     taskList.Add(new Task(() =>
     {
