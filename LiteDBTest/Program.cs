@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using System.Drawing;
+using LiteDB;
 using Yitter.IdGenerator;
 
 namespace LiteDBTest;
@@ -7,6 +8,24 @@ public class Program
 {
     public static void Main()
     {
+        Lock @lock = new Lock();
+        // ManualResetEventSlim _manualResetEventSlim = new(false);
+        var taskList1 = new List<Task>();
+        for (int i = 0; i < 6; i++)
+        {
+            taskList1.Add(Task.Run(() =>
+            {
+                using var _ = @lock.EnterScope();
+                Thread.Sleep(100);
+                // _manualResetEventSlim.Reset();
+                // using var timeOutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                // using var cts = CancellationTokenSource.CreateLinkedTokenSource(timeOutCts.Token, CancellationToken.None);
+                // _manualResetEventSlim.Wait(cts.Token);
+            }));
+        }
+
+        Task.WaitAll(taskList1.ToArray());
+
         YitIdHelper.SetIdGenerator(new IdGeneratorOptions
         {
             WorkerId = 1,
@@ -22,16 +41,73 @@ public class Program
         BsonMapper.Global.RegisterType(t => new BsonValue(t.ToString("yyyyMMddHHmmssfffffff")),
             t => DateTime.ParseExact(t.AsString, "yyyyMMddHHmmssfffffff", null));
 
-        using (var db = new LiteDatabase(new ConnectionString(@"MyDatabase.db"){Connection = ConnectionType.Direct}))
+        var db = new LiteDatabase(new ConnectionString(@"MyDatabase.db") { Connection = ConnectionType.Direct });
+        // db.Dispose();
         {
             // 获取 "TestA" 集合（如果不存在则创建）
-            var testACollection = db.GetCollection<TestA>("TestA12", BsonAutoId.Int64);
-            var testACollectionList = db.GetCollection("TestAlist", BsonAutoId.Int64);
+            var testACollection = db.GetCollection<TestA>("Core_Models_Models_Microscope_Focus_MicroscopeFocusItemDto_IdListCache", BsonAutoId.Int64);
+            var testACollectionList = db.GetCollection("Core_Models_Models_Microscope_Focus_MicroscopeFocusItemDto_IdListCache1", BsonAutoId.Int64);
+            var testACollectionList1 = db.GetCollection("abc", BsonAutoId.Int64);
+            testACollection.DeleteMany(t => t.Id > 0);
+
+            var taskList = new List<Task>();
+            for (int i = 0; i < 1000; i++)
+            {
+                var i1 = i;
+                taskList.Add(new Task(() =>
+                {
+                    try
+                    {
+                        var a = db.BeginTrans();
+                        var a1 = db.BeginTrans();
+                        var a2 = db.BeginTrans();
+                        // var a3 = db.Commit();
+                        Thread.Sleep(10);
+                        var count1 = testACollectionList.Find(Query.All(Query.Descending)).Count();
+                        var count2 = testACollection.Find(Query.All()).Count();
+                        var bsonDocument = new BsonDocument { { "id", i1 } };
+                        testACollectionList1.Insert(bsonDocument);
+                        if (i1 is > 10 and < 20)
+                            throw new Exception("Test" + i1);
+                        var a4 = db.Commit();
+                        // Console.WriteLine(a4);
+                    }
+                    catch (Exception ex)
+                    {
+                        var a4 = db.Rollback();
+                        Console.WriteLine(ex.Message + a4);
+                    }
+                }));
+            }
+
+            // taskList执行
+            taskList.ForEach(t => t.Start());
+
+            Task.WaitAll(taskList.ToArray());
+
+            var testA1 = RandomDataGenerator.GenerateTestA();
+            // if (i < 5)
+            //     testA.Id = YitIdHelper.NextId();
+            // Thread.Sleep(500);
+            testA1.Id = YitIdHelper.NextId();
+            testA1.CreateDateTime = DateTime.Now;
+            testA1.IsDelete = true;
+            testA1.Bitmap = new Bitmap($"C:\\Users\\DELL\\Pictures\\PixPin_2024-12-25_14-47-56.bmp");
+            // Thread.Sleep(1000);
+            testACollection.Insert(testA1);
+            var testAs = testACollection.Query().Where(t=>t.Id == testA1.Id).Where(t=>t.IsDelete == false).ToList();
+            testA1.IsDelete = false;
+            testACollection.Upsert(testA1);
+            testAs = testACollection.Query().Where(t=>t.Id == testA1.Id).Where(t=>t.IsDelete == false).ToList();
+            var document = testACollectionList1.Find(Query.All(Query.Descending)).First();
+            document["id"] = -1;
+            var upsert = testACollectionList1.Upsert(document);
+
             // 插入 10 条 TestA 数据
             List<TestA> insertedTestAs = new List<TestA>();
             BsonDocument doc = new BsonDocument();
             var list = new List<BsonValue>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 5; i++)
             {
                 var testA = RandomDataGenerator.GenerateTestA();
                 // if (i < 5)
@@ -44,13 +120,14 @@ public class Program
                 Console.WriteLine($"TestA {i + 1} 已插入到数据库！");
                 list.Add(testA.Id);
             }
+
             doc.Add("id", YitIdHelper.NextId());
             doc.Add("Ids", new BsonArray(list));
             testACollectionList.Insert(doc);
             testACollectionList.EnsureIndex("Ids");
 
             var longs = testACollectionList.Find(Query.All(Query.Descending)).Take(1).First()["Ids"].AsArray;
-            var allTestAs = testACollection.Find(Query.In("_id", longs)).ToList().OrderByDescending(t=>t.Id).ToList();
+            var allTestAs = testACollection.Find(Query.In("_id", longs)).ToList().OrderByDescending(t => t.Id).ToList();
 
             // 打印插入的数据和查询的数据，验证一致性
             Console.WriteLine("\n插入的数据：");
@@ -104,7 +181,9 @@ public interface ICacheItem
 public sealed record TestA : ICacheItem
 {
     public long Id { get; set; }
-
+    public long Id1 { get; } = 1234;
+    public Bitmap Bitmap { get; set; }
+    public bool IsDelete { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Age { get; set; }
     public double Length { get; set; }
@@ -225,8 +304,10 @@ public class RandomDataGenerator
             Test2 = new Dictionary<string, List<TestB>>() { { (0.1d, TestEnum.Test1).ToString(), [GenerateTestB()] }, { (0.3d, TestEnum.Test3).ToString(), [GenerateTestB()] } },
             Test3 = new Dictionary<string, (TestEnum, double)>() { { (0.1d, TestEnum.Test1).ToString(), (TestEnum.Test2, 100.1d) } },
             // TestB = GenerateTestC(),
-            TestBs1 = new List<TestB> { GenerateTestB(), GenerateTestB()
-        }
+            TestBs1 = new List<TestB>
+            {
+                GenerateTestB(), GenerateTestB()
+            }
         };
         return testA;
     }
