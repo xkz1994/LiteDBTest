@@ -1,4 +1,5 @@
 ﻿using Local.NoSQL.DB.Providers;
+using Local.NoSQL.DB.Providers.Implements;
 using Local.NoSQL.DB.Providers.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,12 +19,15 @@ var serviceProvider = host.Services;
 var cacheProvider = serviceProvider.GetRequiredService<ICacheProvider>();
 
 var tests = cacheProvider.GetArray<Test>(CancellationToken.None);
+Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
 
 Test[] insert = [.. Enumerable.Range(1, 10).Select(i => new Test { TestId = i }).ToArray()];
 var set = cacheProvider.SetArray(insert, CancellationToken.None);
+Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
 Console.WriteLine(set);
 
 tests = cacheProvider.GetArray<Test>(CancellationToken.None);
+Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
 
 
 cacheProvider.Dispose();

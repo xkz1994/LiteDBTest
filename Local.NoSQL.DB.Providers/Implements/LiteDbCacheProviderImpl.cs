@@ -26,7 +26,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
     /// <summary>
     /// 使用LiteDb的次数
     /// </summary>
-    private static int _useLiteDbCount;
+    public static int _useLiteDbCount;
 
     public T? Get<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
     {
@@ -297,7 +297,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         var totalCount = liteCollection
             .Query()
             .Where(t => t.IsDeleted == false)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(0))).ToUnixTimeSeconds())
             .Count();
 
         var deleteCount = totalCount - RemoveExpirationCacheKeepCount;
@@ -306,7 +306,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         var toDelete = liteCollection
             .Query()
             .Where(t => t.IsDeleted == false)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(23).Add(TimeSpan.FromSeconds(58))).ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(0))).ToUnixTimeSeconds())
             .OrderBy(t => t.Id)
             .Limit(deleteCount) // 限制最多删除的数量
             .ToList();
@@ -314,7 +314,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         toDelete.AddRange(liteCollection
             .Query()
             .Where(t => t.IsDeleted)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromHours(23).Add(TimeSpan.FromSeconds(58))).ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(0))).ToUnixTimeSeconds())
             .ToList()); // 将已删除的数据超过缓存最大的时间也加入删除列表
 
         var resultList = toDelete.Select(item => liteCollection.Delete(item.Id)).ToList();
