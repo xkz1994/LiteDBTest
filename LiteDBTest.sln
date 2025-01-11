@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDBTest", "LiteDBTest\LiteDBTest.csproj", "{8BF41419-8914-4F09-A1E6-E95373452B22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDBTest2", "LiteDBTest2\LiteDBTest2.csproj", "{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Local.NoSQL.DB.Providers", "Local.NoSQL.DB.Providers\Local.NoSQL.DB.Providers.csproj", "{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

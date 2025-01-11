@@ -16,6 +16,10 @@
         <PackageReference Include="LiteDB" Version="5.0.21" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Yitter.IdGenerator" Version="1.0.14" />
+        <PackageReference Include="SourceGenerator.InjectHostDI" Version="1.7.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>
