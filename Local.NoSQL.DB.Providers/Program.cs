@@ -28,16 +28,22 @@ for (var index = 0; index < 1; index++)
     {
         try
         {
-            var tests = cacheProvider.GetArray<Test>(CancellationToken.None);
+            var tests = cacheProvider.GetArray<Test>();
             Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
 
-            Test[] insert = [.. Enumerable.Range(1, 10).Select(i => new Test { TestId = i, Name = "今天"}).ToArray()];
+            Test[] insert = [.. Enumerable.Range(1, 10).Select(i => new Test { TestId = i, Name = "今天你吃饭了么？？？？，对吧，哈哈😄,nihao" }).ToArray()];
             var set = cacheProvider.SetArray(insert, CancellationToken.None);
             Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
             Console.WriteLine(set);
 
-            tests = cacheProvider.GetArray<Test>(CancellationToken.None);
+            tests = cacheProvider.GetArray<Test>();
+            
+
+            
             Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
+            
+            // tests和insert元素是否相等
+            Console.WriteLine(tests.SequenceEqual(insert));
         }
         catch (Exception ex)
         {

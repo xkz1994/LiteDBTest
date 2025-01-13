@@ -1,4 +1,5 @@
 using LiteDB;
+using LiteDB.Engine;
 using Local.NoSQL.DB.Providers.Helper;
 using Local.NoSQL.DB.Providers.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -299,7 +300,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         // 将未提交的-log文件写入主数据库
         liteDatabase.Checkpoint();
         // 将已经删除的内存页从数据库中清除, 释放空间
-        liteDatabase.Rebuild();
+        liteDatabase.Rebuild(new RebuildOptions{Collation = new Collation("en-US/None")});
         liteDatabase.Dispose();
         Semaphore.Dispose();
     }

@@ -14,6 +14,21 @@ public sealed partial class Test : ObservableCacheBase
     
     public byte[] Data { get; set; } = GenerateRandomByteArray(1024);
 
+    private bool Equals(Test other)
+    {
+        return TestId == other.TestId && Name == other.Name && Name1 == other.Name1;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is Test other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(TestId, Name, Name1);
+    }
+
     public static byte[] GenerateRandomByteArray(int size)
     {
         var array = new byte[size];
