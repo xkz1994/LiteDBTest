@@ -8,7 +8,11 @@ public sealed partial class Test : ObservableCacheBase
     [ObservableProperty]
     public partial int TestId { get; set; }
 
-    public byte[] Data { get; set; } = GenerateRandomByteArray(102400);
+    public string Name { get; set; } = string.Empty;
+    
+    public string Name1 { get;  } = string.Empty;
+    
+    public byte[] Data { get; set; } = GenerateRandomByteArray(1024);
 
     public static byte[] GenerateRandomByteArray(int size)
     {

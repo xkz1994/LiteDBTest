@@ -28,7 +28,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
     /// </summary>
     public static int _useLiteDbCount;
 
-    public T? Get<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public T? Get<T>() where T : class, ICacheItem, new()
     {
         var name = typeof(T).FullName;
         var collectionName = LiteDbHelper.RemoveInvalidFileName(name);
@@ -59,32 +59,32 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
     }
 
-    public T GetOrDefault<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public T GetOrDefault<T>() where T : class, ICacheItem, new()
     {
-        return Get<T>(cancellationToken) ?? new T();
+        return Get<T>() ?? new T();
     }
 
-    public bool TryGetOrDefault<T>(out T obj, CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public bool TryGetOrDefault<T>(out T obj) where T : class, ICacheItem, new()
     {
-        var cacheItem = Get<T>(cancellationToken);
-        if (cacheItem is null)
+        var result = Get<T>();
+        if (result is null)
         {
             obj = new T();
             return false;
         }
 
-        obj = cacheItem;
+        obj = result;
 
         return true;
     }
 
-    public (bool IsSuccess, T Item) TryGetOrDefault<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public (bool IsSuccess, T Item) TryGetOrDefault<T>() where T : class, ICacheItem, new()
     {
-        var cacheItem = Get<T>(cancellationToken);
+        var result = Get<T>();
 
-        return cacheItem is null
+        return result is null
             ? (false, new T())
-            : (true, cacheItem);
+            : (true, result);
     }
 
     public bool Set<T>(T item, CancellationToken cancellationToken) where T : class, ICacheItem, new()
@@ -148,7 +148,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
     }
 
-    public T[]? GetArray<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public T[]? GetArray<T>() where T : class, ICacheItem, new()
     {
         var name = typeof(T).FullName;
         var collectionName = LiteDbHelper.RemoveInvalidFileName(name);
@@ -189,14 +189,14 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
     }
 
-    public T[] GetOrDefaultArray<T>(CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public T[] GetOrDefaultArray<T>() where T : class, ICacheItem, new()
     {
-        return GetArray<T>(cancellationToken) ?? [];
+        return GetArray<T>() ?? [];
     }
 
-    public bool TryGetOrDefaultArray<T>(out T[] items, CancellationToken cancellationToken) where T : class, ICacheItem, new()
+    public bool TryGetOrDefaultArray<T>(out T[] items) where T : class, ICacheItem, new()
     {
-        var result = GetArray<T>(cancellationToken);
+        var result = GetArray<T>();
         if (result is null)
         {
             items = [];
@@ -206,6 +206,15 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         items = result;
 
         return true;
+    }
+
+    public (bool IsSuccess, T[] Items) TryGetOrDefaultArray<T>() where T : class, ICacheItem, new()
+    {
+        var result = GetArray<T>();
+
+        return result is null
+            ? (false, [])
+            : (true, cacheItem: result);
     }
 
     public bool SetArray<T>(T[] items, CancellationToken cancellationToken) where T : class, ICacheItem, new()
@@ -287,7 +296,9 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
 
     public void Dispose()
     {
+        // 将未提交的-log文件写入主数据库
         liteDatabase.Checkpoint();
+        // 将已经删除的内存页从数据库中清除, 释放空间
         liteDatabase.Rebuild();
         liteDatabase.Dispose();
         Semaphore.Dispose();

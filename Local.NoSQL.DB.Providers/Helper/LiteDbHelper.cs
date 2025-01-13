@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using CommunityToolkit.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using CommunityToolkit.Diagnostics;
 
 namespace Local.NoSQL.DB.Providers.Helper;
 

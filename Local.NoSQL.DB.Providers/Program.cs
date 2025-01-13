@@ -22,7 +22,7 @@ var cacheProvider = serviceProvider.GetRequiredService<ICacheProvider>();
 var timestamp = Stopwatch.GetTimestamp();
 
 var taskList = new List<Task>();
-for (var i = 0; i < 1; i++)
+for (var index = 0; index < 1; index++)
 {
     taskList.Add(new Task(() =>
     {
@@ -31,7 +31,7 @@ for (var i = 0; i < 1; i++)
             var tests = cacheProvider.GetArray<Test>(CancellationToken.None);
             Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
 
-            Test[] insert = [.. Enumerable.Range(1, 10).Select(i => new Test { TestId = i }).ToArray()];
+            Test[] insert = [.. Enumerable.Range(1, 10).Select(i => new Test { TestId = i, Name = "今天"}).ToArray()];
             var set = cacheProvider.SetArray(insert, CancellationToken.None);
             Console.WriteLine(LiteDbCacheProviderImpl._useLiteDbCount);
             Console.WriteLine(set);

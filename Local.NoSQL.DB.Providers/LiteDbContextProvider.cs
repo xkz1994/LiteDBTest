@@ -34,10 +34,6 @@ public static class LiteDbContextProvider
 
             var liteDatabase = new LiteDatabase(new ConnectionString(appSettingOptions.NosqlDbDataSource) { Connection = ConnectionType.Direct });
 
-            // 将未提交的-log文件写入主数据库
-            liteDatabase.Checkpoint();
-            // liteDatabase.Rebuild();
-
             return liteDatabase;
         });
 
