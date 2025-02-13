@@ -43,7 +43,7 @@ public static class LiteDbContextProvider
             DirectoryHelper.CreateFileDirectoryIfNotExists(appSettingOptions.NosqlDbDataSource);
 
             // Collation 只会影响查询字符串的排序，所以也不重要，默认：zh-CN/IgnoreCase
-            var liteDatabase = new LiteDatabase(new ConnectionString(appSettingOptions.NosqlDbDataSource) { Connection = ConnectionType.Direct, Collation = new Collation("en-US/None") });
+            var liteDatabase = new LiteDatabase(new ConnectionString(appSettingOptions.NosqlDbDataSource) { Connection = ConnectionType.Direct, Collation = new Collation("en-US/IgnoreCase") });
 
             return liteDatabase;
         });

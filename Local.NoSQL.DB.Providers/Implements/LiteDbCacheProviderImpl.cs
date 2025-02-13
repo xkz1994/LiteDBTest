@@ -27,7 +27,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
     /// <summary>
     /// 使用LiteDb的次数
     /// </summary>
-    public static int _useLiteDbCount;
+    private static int _useLiteDbCount;
 
     public T? Get<T>() where T : class, ICacheItem, new()
     {
@@ -50,7 +50,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "{@Name}: Get cache failed", name);
+            logger.LogCritical(ex, "{@Name}: Get cache failed", name);
 
             return null;
         }
@@ -124,7 +124,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
                     return true;
                 }
 
-                logger.LogWarning("{@Name}: Set cache failed, so Roll back", name);
+                logger.LogCritical("{@Name}: Set cache failed, so Roll back", name);
                 liteDatabase.Rollback();
 
                 return false;
@@ -143,7 +143,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "{@Name}: Set cache failed", name);
+            logger.LogCritical(ex, "{@Name}: Set cache failed", name);
 
             return false;
         }
@@ -180,7 +180,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "{@Name}: Get cache failed", name);
+            logger.LogCritical(ex, "{@Name}: Get cache failed", name);
 
             return null;
         }
@@ -270,7 +270,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
                     return true;
                 }
 
-                logger.LogWarning("{@Name}: Set cache failed, so Roll back", name);
+                logger.LogCritical("{@Name}: Set cache failed, so Roll back", name);
                 liteDatabase.Rollback();
 
                 return false;
@@ -289,7 +289,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "{@Name}: Set cache failed", name);
+            logger.LogCritical(ex, "{@Name}: Set cache failed", name);
 
             return false;
         }
@@ -299,8 +299,12 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
     {
         // 将未提交的-log文件写入主数据库
         liteDatabase.Checkpoint();
+
         // 将已经删除的内存页从数据库中清除, 释放空间
-        liteDatabase.Rebuild(new RebuildOptions{Collation = new Collation("en-US/None")});
+        var rebuildOptions = new RebuildOptions { Collation = new Collation("en-US/IgnoreCase") };
+        liteDatabase.Rebuild(rebuildOptions);
+        if (rebuildOptions.GetErrorReport().Any()) logger.LogCritical("Rebuild error: {@ErrorReport}", string.Join(Environment.NewLine, rebuildOptions.GetErrorReport().Select(t => t.ToString())));
+
         liteDatabase.Dispose();
         Semaphore.Dispose();
     }
@@ -310,7 +314,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         var totalCount = liteCollection
             .Query()
             .Where(t => t.IsDeleted == false)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(59))).ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             .Count();
 
         var deleteCount = totalCount - RemoveExpirationCacheKeepCount;
@@ -319,7 +323,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         var toDelete = liteCollection
             .Query()
             .Where(t => t.IsDeleted == false)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(59))).ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             .OrderBy(t => t.Id)
             .Limit(deleteCount) // 限制最多删除的数量
             .ToList();
@@ -327,7 +331,7 @@ public sealed class LiteDbCacheProviderImpl(LiteDatabase liteDatabase, IOptions<
         toDelete.AddRange(liteCollection
             .Query()
             .Where(t => t.IsDeleted)
-            .Where(c => c.Expiration < DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(59)).Add(TimeSpan.FromHours(23).Add(TimeSpan.FromMinutes(59))).ToUnixTimeSeconds())
+            .Where(c => c.Expiration < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             .ToList()); // 将已删除的数据超过缓存最大的时间也加入删除列表
 
         var resultList = toDelete.Select(item => liteCollection.Delete(item.Id)).ToList();

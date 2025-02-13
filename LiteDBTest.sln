@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiteDBTest", "LiteDBTest\Li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Local.NoSQL.DB.Providers", "Local.NoSQL.DB.Providers\Local.NoSQL.DB.Providers.csproj", "{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageTest", "ImageTest\ImageTest.csproj", "{2DB76050-C80F-4F1E-BB13-D63F3CF2594F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCD98CEE-D4F8-4F04-B0B9-9662DE784EE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DB76050-C80F-4F1E-BB13-D63F3CF2594F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DB76050-C80F-4F1E-BB13-D63F3CF2594F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DB76050-C80F-4F1E-BB13-D63F3CF2594F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DB76050-C80F-4F1E-BB13-D63F3CF2594F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
